@@ -22,7 +22,6 @@ public class Group {
     private List<Player> players;
 
     public Group(String name, Long[] playerIds) {
-        this.winnerId = -1L;
         this.name = name;
 
         HashSet<Long> playerIdSet = new HashSet<>(Arrays.asList(playerIds));
