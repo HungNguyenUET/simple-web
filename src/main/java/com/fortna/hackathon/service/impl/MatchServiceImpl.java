@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.fortna.hackathon.dao.*;
+import com.fortna.hackathon.entity.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,19 +21,10 @@ import org.springframework.transaction.annotation.Transactional;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fortna.hackathon.config.FileStorageConfiguration;
-import com.fortna.hackathon.dao.MatchDao;
-import com.fortna.hackathon.dao.RoundDao;
-import com.fortna.hackathon.dao.SubmissionDao;
-import com.fortna.hackathon.dao.UserDao;
 import com.fortna.hackathon.dto.CreateMatchDto;
 import com.fortna.hackathon.dto.GameLog;
 import com.fortna.hackathon.dto.GameLog.PlayerLog;
 import com.fortna.hackathon.dto.MatchMgmtDto;
-import com.fortna.hackathon.entity.Course;
-import com.fortna.hackathon.entity.Match;
-import com.fortna.hackathon.entity.Round;
-import com.fortna.hackathon.entity.Submission;
-import com.fortna.hackathon.entity.User;
 import com.fortna.hackathon.exception.RunGameException;
 import com.fortna.hackathon.service.MatchService;
 import com.fortna.hackathon.utils.GameConstant;
@@ -55,6 +48,9 @@ public class MatchServiceImpl implements MatchService {
 
     @Autowired
     private SubmissionDao submissionDao;
+
+    @Autowired
+    private PlayerDAO playerDAO;
 
     @Autowired
     private FileStorageConfiguration fileStorageConfig;
@@ -218,6 +214,12 @@ public class MatchServiceImpl implements MatchService {
         match.setErrorMessage(null);
         matchDao.save(match);
         logger.info("Game {} runs successfully! Winner is {}", id, finalWinner);
+
+        Player winner = playerDAO.findById(user.getId()).orElse(null);
+        if (winner != null) {
+            winner.addScore(3);
+            playerDAO.save(winner);
+        }
     }
 
     private String findWinnerFromResultFile(long id, boolean isAwayMatch, String pathToResultFile) throws Exception {
